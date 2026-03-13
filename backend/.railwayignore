@@ -1,0 +1,9 @@
+venv/
+__pycache__/
+*.pyc
+.env
+chroma_db/
+media/
+staticfiles/
+*.sqlite3
+node_modules/
