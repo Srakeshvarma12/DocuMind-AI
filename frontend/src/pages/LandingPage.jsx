@@ -34,13 +34,7 @@ export default function LandingPage() {
             {/* Hero Section */}
             <section className="pt-32 pb-20 px-6">
                 <div className="max-w-4xl mx-auto text-center animate-slide-up">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-50 border border-brand-100 text-brand-700 text-xs font-semibold mb-8">
-                        <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span>
-                        </span>
-                        Powered by Google Gemini
-                    </div>
+
                     <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
                         Upload any document. <br />
                         <span className="text-brand-600">Understand everything</span> instantly.
@@ -106,27 +100,7 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* Pricing Section (Placeholder) */}
-            <section id="pricing" className="py-24 bg-white border-t border-gray-100">
-                <div className="max-w-4xl mx-auto px-6 text-center">
-                    <h2 className="text-3xl font-bold mb-4">Start understanding today</h2>
-                    <p className="text-gray-500 mb-10">Join thousands of users simplifying their document workflows.</p>
-                    <div className="card-premium max-w-sm mx-auto border-brand-200">
-                        <div className="mb-8">
-                            <span className="text-4xl font-bold">$0</span>
-                            <span className="text-gray-400 text-sm">/month</span>
-                            <p className="text-brand-600 font-semibold mt-2">Free Beta</p>
-                        </div>
-                        <ul className="space-y-4 mb-8 text-left">
-                            <li className="flex items-center gap-3 text-sm text-gray-600"><Check size={16} className="text-green-500" /> Unlimited document uploads</li>
-                            <li className="flex items-center gap-3 text-sm text-gray-600"><Check size={16} className="text-green-500" /> AI-powered chat & summary</li>
-                            <li className="flex items-center gap-3 text-sm text-gray-600"><Check size={16} className="text-green-500" /> Source page references</li>
-                            <li className="flex items-center gap-3 text-sm text-gray-600"><Check size={16} className="text-green-500" /> 25MB max file size</li>
-                        </ul>
-                        <Link to="/login" className="btn-primary w-full py-3">Get Started Now</Link>
-                    </div>
-                </div>
-            </section>
+
 
             {/* Footer */}
             <footer className="py-12 border-t border-gray-100 text-center">
