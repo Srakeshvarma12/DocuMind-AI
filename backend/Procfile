@@ -1,2 +1,2 @@
+release: python manage.py migrate
 web: pip install -r requirements-torch.txt && gunicorn documind.wsgi:application --bind 0.0.0.0:$PORT --workers 2
-worker: celery -A documind worker --loglevel=info --pool=solo
