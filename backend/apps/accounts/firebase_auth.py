@@ -5,22 +5,42 @@ from django.conf import settings
 from rest_framework import authentication
 from rest_framework import exceptions
 from django.contrib.auth import get_user_model
+import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
 # Initialize Firebase Admin SDK
-service_account_path = os.environ.get(
-    'FIREBASE_SERVICE_ACCOUNT_PATH',
-    os.path.join(settings.BASE_DIR, 'firebase-service-account.json')
-)
-
 try:
     if not firebase_admin._apps:
-        cred = credentials.Certificate(service_account_path)
-        firebase_admin.initialize_app(cred)
+        # Check for FIREBASE_CREDENTIALS environment variable first (Production/Railway)
+        creds_json = os.environ.get('FIREBASE_CREDENTIALS')
+        
+        if creds_json:
+            try:
+                creds_dict = json.loads(creds_json)
+                cred = credentials.Certificate(creds_dict)
+                logger.info("Initializing Firebase using FIREBASE_CREDENTIALS env var")
+            except Exception as e:
+                logger.error(f"Failed to parse FIREBASE_CREDENTIALS: {str(e)}")
+                raise e
+        else:
+            # Fallback to file-based (Local development)
+            path = os.environ.get('FIREBASE_SERVICE_ACCOUNT_PATH', 
+                                os.path.join(settings.BASE_DIR, 'firebase-service-account.json'))
+            if os.path.exists(path):
+                cred = credentials.Certificate(path)
+                logger.info(f"Initializing Firebase using file: {path}")
+            else:
+                logger.warning(f"Firebase credentials not found (neither env var nor file at {path})")
+                cred = None
+        
+        if cred:
+            firebase_admin.initialize_app(cred)
 except Exception as e:
-    # Fallback/Debug logging
-    print(f"Firebase initialization error: {str(e)}")
+    logger.error(f"Firebase initialization error: {str(e)}")
 
 class FirebaseAuthentication(authentication.BaseAuthentication):
     def authenticate(self, request):
