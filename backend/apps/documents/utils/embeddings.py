@@ -3,6 +3,8 @@ from sentence_transformers import SentenceTransformer
 import logging
 import os
 
+from django.conf import settings
+
 logger = logging.getLogger(__name__)
 
 # Load model once at module level (lazy singleton)
@@ -20,7 +22,8 @@ def get_model():
 
 def get_chroma_client():
     """Get persistent ChromaDB client."""
-    db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), 'chroma_db')
+    db_path = os.path.join(settings.BASE_DIR, 'chroma_db')
+    logger.debug(f"Connecting to ChromaDB at: {db_path}")
     return chromadb.PersistentClient(path=db_path)
 
 

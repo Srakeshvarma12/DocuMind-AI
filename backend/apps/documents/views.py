@@ -64,35 +64,45 @@ class DocumentUploadView(APIView):
                 tmp_path = tmp.name
 
             # Upload to Cloudinary
-            from .utils.storage import upload_document
-            from .utils.extraction import extract_text, get_doc_metadata
-            cloud_result = upload_document(tmp_path, file.name.rsplit('.', 1)[0])
+            try:
+                from .utils.storage import upload_document
+                from .utils.extraction import extract_text, get_doc_metadata
+                cloud_result = upload_document(tmp_path, file.name.rsplit('.', 1)[0])
+            except Exception as e:
+                logger.error(f"Cloudinary upload failed: {str(e)}")
+                raise Exception(f"Cloudinary upload failed: {str(e)}")
 
             # Create document record
             title = request.data.get('title', file.name)
             
-            # Extract text and metadata while local (to avoid Cloudinary 401 later)
-            logger.info(f"Starting local extraction for {title} (ext: {file_ext}) from {tmp_path}")
-            extracted_txt = extract_text(tmp_path, file_ext)
-            metadata = get_doc_metadata(tmp_path, file_ext)
-            
-            logger.info(f"Local extraction finished. Text length: {len(extracted_txt)}, Pages: {metadata['page_count']}")
+            # Extract text and metadata while local
+            try:
+                logger.info(f"Starting local extraction for {title}")
+                extracted_txt = extract_text(tmp_path, file_ext)
+                metadata = get_doc_metadata(tmp_path, file_ext)
+                logger.info(f"Local extraction finished. Pages: {metadata['page_count']}")
+            except Exception as e:
+                logger.error(f"Text extraction fail: {str(e)}")
+                raise Exception(f"Text extraction failed: {str(e)}")
 
-            doc = Document.objects.create(
-                user=request.user,
-                title=title,
-                file_url=cloud_result['url'],
-                file_public_id=cloud_result['public_id'],
-                file_type=file_ext,
-                file_size=file.size,
-                extracted_text=extracted_txt,
-                page_count=metadata['page_count'],
-                word_count=metadata['word_count'],
-                status='uploading'
-            )
+            try:
+                doc = Document.objects.create(
+                    user=request.user,
+                    title=title,
+                    file_url=cloud_result['url'],
+                    file_public_id=cloud_result['public_id'],
+                    file_type=file_ext,
+                    file_size=file.size,
+                    extracted_text=extracted_txt,
+                    page_count=metadata['page_count'],
+                    word_count=metadata['word_count'],
+                    status='uploading'
+                )
+            except Exception as e:
+                logger.error(f"Database creation failed: {str(e)}")
+                raise Exception(f"Database record creation failed: {str(e)}")
 
-            # Trigger background task (summarization and embedding)
-            # Pass extracted text directly to avoid downloading from Cloudinary
+            # Trigger background task
             try:
                 from .tasks import process_document
                 process_document.delay(
@@ -101,9 +111,8 @@ class DocumentUploadView(APIView):
                     page_count=metadata['page_count'],
                     word_count=metadata['word_count']
                 )
-                logger.info(f"Task process_document queued for doc {doc.id}")
             except Exception as e:
-                logger.warning(f"Celery not available, processing synchronously: {e}")
+                logger.warning(f"Celery not available, using thread: {e}")
                 from .tasks import process_document_sync
                 thread = threading.Thread(target=process_document_sync, args=(doc.id,))
                 thread.start()
@@ -112,13 +121,13 @@ class DocumentUploadView(APIView):
             return Response({
                 'success': True,
                 'data': serializer.data,
-                'message': 'Document uploaded successfully. Processing started.'
+                'message': 'Document uploaded successfully.'
             }, status=status.HTTP_201_CREATED)
 
         except Exception as e:
-            logger.error(f"Upload failed: {str(e)}")
+            logger.error(f"UPLOAD 500 ERROR: {str(e)}", exc_info=True)
             return Response(
-                {'success': False, 'error': f'Upload failed: {str(e)}', 'code': 'UPLOAD_FAILED'},
+                {'success': False, 'error': str(e), 'code': 'UPLOAD_FAILED'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
         finally:
