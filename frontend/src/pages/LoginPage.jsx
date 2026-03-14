@@ -23,7 +23,7 @@ export default function LoginPage() {
             // Sync with backend to ensure user record exists before dashboard loads
             if (loginResult && loginResult.user) {
                 const token = await loginResult.user.getIdToken();
-                await client.post('/accounts/verify/', {}, {
+                await client.post('/auth/verify/', {}, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
             }

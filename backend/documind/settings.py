@@ -160,3 +160,12 @@ LOGGING = {
         },
     },
 }
+
+# Auto-migrate on startup
+import sys
+if 'runserver' not in sys.argv and 'migrate' not in sys.argv:
+    try:
+        from django.db import connection
+        connection.ensure_connection()
+    except Exception:
+        pass

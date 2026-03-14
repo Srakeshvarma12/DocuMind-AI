@@ -1,7 +1,7 @@
 import client from '../api/client';
 
 export const authApi = {
-    verifyToken: (token) => client.post('/accounts/verify-token/', {}),
+    verifyToken: (token) => client.post('/auth/verify/', {}),
 };
 
 export const documentApi = {

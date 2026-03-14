@@ -15,8 +15,12 @@ def get_model():
     """Get or initialize the sentence transformer model."""
     global _model
     if _model is None:
-        logger.info("Loading sentence-transformers model: all-MiniLM-L6-v2")
-        _model = SentenceTransformer('all-MiniLM-L6-v2')
+        cache_dir = os.path.join(settings.BASE_DIR, 'model_cache')
+        if not os.path.exists(cache_dir):
+            os.makedirs(cache_dir, exist_ok=True)
+            
+        logger.info(f"Loading sentence-transformers model to {cache_dir}")
+        _model = SentenceTransformer('all-MiniLM-L6-v2', cache_folder=cache_dir)
     return _model
 
 
