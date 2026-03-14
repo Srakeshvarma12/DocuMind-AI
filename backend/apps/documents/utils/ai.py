@@ -1,12 +1,8 @@
 import os
 import logging
 import time
-import google.generativeai as genai
 
 logger = logging.getLogger(__name__)
-
-# Configure Gemini API
-genai.configure(api_key=os.environ.get('GEMINI_API_KEY'))
 
 SUMMARIZE_PROMPT = """You are a document summarization expert.
 Summarize the following document clearly and concisely.
@@ -43,6 +39,8 @@ def get_summary(text: str) -> str:
     Generate an AI summary of the document text.
     Uses the first 6000 characters for summarization.
     """
+    import google.generativeai as genai
+    genai.configure(api_key=os.environ.get('GEMINI_API_KEY'))
     model_name = 'gemini-2.5-flash'
     try:
         model = genai.GenerativeModel(model_name)
@@ -75,6 +73,8 @@ def answer_question(question: str, chunks: list, chat_history: list = None) -> s
     context = "\n\n---\n\n".join([f"[Page {c['page']}]: {c['text']}" for c in chunks])
     history = "\n".join([f"{m['role'].upper()}: {m['content']}" for m in chat_history[-6:]])
 
+    import google.generativeai as genai
+    genai.configure(api_key=os.environ.get('GEMINI_API_KEY'))
     model_name = 'gemini-2.5-flash'
     try:
         model = genai.GenerativeModel(model_name)

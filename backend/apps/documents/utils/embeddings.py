@@ -1,5 +1,3 @@
-import chromadb
-from sentence_transformers import SentenceTransformer
 import logging
 import os
 
@@ -15,6 +13,7 @@ def get_model():
     """Get or initialize the sentence transformer model."""
     global _model
     if _model is None:
+        from sentence_transformers import SentenceTransformer
         cache_dir = os.path.join(settings.BASE_DIR, 'model_cache')
         if not os.path.exists(cache_dir):
             os.makedirs(cache_dir, exist_ok=True)
@@ -26,6 +25,7 @@ def get_model():
 
 def get_chroma_client():
     """Get persistent ChromaDB client."""
+    import chromadb
     db_path = os.path.join(settings.BASE_DIR, 'chroma_db')
     logger.debug(f"Connecting to ChromaDB at: {db_path}")
     return chromadb.PersistentClient(path=db_path)

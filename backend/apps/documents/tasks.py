@@ -1,7 +1,6 @@
 from celery import shared_task
 from django.utils import timezone
 import tempfile
-import requests
 import logging
 import os
 
@@ -68,6 +67,7 @@ def process_document(self, document_id: int, extracted_text: str = None, page_co
                 )
 
             logger.info(f"Downloading fallback from: {download_url}")
+            import requests
             response = requests.get(download_url, timeout=30)
             response.raise_for_status()
 

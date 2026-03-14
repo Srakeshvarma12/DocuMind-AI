@@ -4,7 +4,6 @@ from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
 from .models import Document
 from .serializers import DocumentSerializer, DocumentDetailSerializer
-from .utils.embeddings import delete_collection
 import tempfile
 import os
 import logging
@@ -163,6 +162,7 @@ class DocumentDetailView(APIView):
 
         # Delete ChromaDB collection
         if doc.chroma_collection_id:
+            from .utils.embeddings import delete_collection
             delete_collection(doc.chroma_collection_id)
 
         doc.delete()
