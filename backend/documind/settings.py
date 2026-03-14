@@ -83,9 +83,6 @@ REST_FRAMEWORK = {
 
 import dj_database_url
 
-print("DATABASE_PUBLIC_URL:", os.environ.get('DATABASE_PUBLIC_URL', 'NOT SET'))
-print("DATABASE_URL:", os.environ.get('DATABASE_URL', 'NOT SET'))
-
 DATABASE_URL = os.environ.get('DATABASE_PUBLIC_URL') or os.environ.get('DATABASE_URL')
 
 if DATABASE_URL:
