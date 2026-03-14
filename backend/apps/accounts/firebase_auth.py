@@ -77,14 +77,37 @@ class FirebaseAuthentication(authentication.BaseAuthentication):
         name = decoded_token.get('name', '')
         avatar_url = decoded_token.get('picture', '')
 
-        user, created = User.objects.get_or_create(
-            firebase_uid=firebase_uid,
-            defaults={
-                'username': email,
-                'email': email,
-                'first_name': name,
-                'avatar_url': avatar_url,
-            }
-        )
+        try:
+            # Try to find user by firebase_uid first
+            user = User.objects.get(firebase_uid=firebase_uid)
+            # Update info if changed
+            updated = False
+            if name and user.first_name != name:
+                user.first_name = name
+                updated = True
+            if avatar_url and user.avatar_url != avatar_url:
+                user.avatar_url = avatar_url
+                updated = True
+            if updated:
+                user.save()
+        except User.DoesNotExist:
+            # Fallback: Check if user exists with same email but no firebase_uid
+            user = User.objects.filter(email=email).first()
+            if user:
+                user.firebase_uid = firebase_uid
+                if name: user.first_name = name
+                if avatar_url: user.avatar_url = avatar_url
+                user.save()
+                logger.info(f"Linked existing user {email} to firebase_uid {firebase_uid}")
+            else:
+                # Create new user
+                user = User.objects.create(
+                    firebase_uid=firebase_uid,
+                    username=email,
+                    email=email,
+                    first_name=name,
+                    avatar_url=avatar_url,
+                )
+                logger.info(f"Created new user {email} with firebase_uid {firebase_uid}")
 
         return (user, None)

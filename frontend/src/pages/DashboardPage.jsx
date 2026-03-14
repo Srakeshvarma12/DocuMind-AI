@@ -20,7 +20,10 @@ export default function DashboardPage() {
             }
         } catch (err) {
             console.error('Failed to fetch documents:', err);
-            toast.error('Failed to load documents');
+            // Don't show toast for 401s as they are handled by the interceptor
+            if (err.response?.status !== 401) {
+                toast.error('Failed to load documents');
+            }
         } finally {
             setLoading(false);
         }

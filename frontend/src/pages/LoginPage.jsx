@@ -4,6 +4,8 @@ import { FileText, ArrowLeft } from 'lucide-react';
 import { useEffect } from 'react';
 import toast from 'react-hot-toast';
 
+import client from '../api/client';
+
 export default function LoginPage() {
     const { user, loginWithGoogle, loginMock } = useAuth();
     const navigate = useNavigate();
@@ -16,7 +18,16 @@ export default function LoginPage() {
 
     const handleGoogleLogin = async () => {
         try {
-            await loginWithGoogle();
+            const loginResult = await loginWithGoogle();
+            
+            // Sync with backend to ensure user record exists before dashboard loads
+            if (loginResult && loginResult.user) {
+                const token = await loginResult.user.getIdToken();
+                await client.post('/accounts/verify/', {}, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+            }
+
             toast.success('Successfully logged in!');
             navigate('/dashboard');
         } catch (err) {
