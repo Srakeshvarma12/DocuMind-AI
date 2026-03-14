@@ -170,11 +170,15 @@ LOGGING = {
     },
 }
 
-# Auto-migrate on startup
+# Forced migrations on startup
 import sys
-if 'runserver' not in sys.argv and 'migrate' not in sys.argv:
+if 'gunicorn' in ' '.join(sys.argv) or 'wsgi' in ' '.join(sys.argv):
+    import django
+    django.setup()
+    from django.db import connection
+    from django.core.management import call_command
     try:
-        from django.db import connection
-        connection.ensure_connection()
-    except Exception:
-        pass
+        call_command('migrate', '--run-syncdb', verbosity=1)
+        print("✅ Migrations completed successfully")
+    except Exception as e:
+        print(f"⚠️ Migration error: {e}")
