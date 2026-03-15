@@ -1,13 +1,14 @@
 import logging
 import os
+import numpy as np
 
 from django.conf import settings
+from apps.documents.models import Document
 
 logger = logging.getLogger(__name__)
 
 # Load model once at module level (lazy singleton)
 _model = None
-
 
 def get_model():
     """Get or initialize the sentence transformer model."""
@@ -22,93 +23,81 @@ def get_model():
         _model = SentenceTransformer('all-MiniLM-L6-v2', cache_folder=cache_dir)
     return _model
 
-
-def get_chroma_client():
-    """Get persistent ChromaDB client."""
-    import chromadb
-    db_path = settings.CHROMA_DB_PATH
-    logger.debug(f"Connecting to ChromaDB at: {db_path}")
-    return chromadb.PersistentClient(path=db_path)
-
-
 def store_chunks(doc_id: int, chunks: list) -> str:
     """
-    Store document chunks with embeddings in ChromaDB.
+    Store document chunks with embeddings in the database.
     
     Args:
         doc_id: Document database ID
         chunks: List of dicts with 'text', 'page_number', 'chunk_index'
-    
-    Returns:
-        Collection name string
     """
-    collection_name = f"doc_{doc_id}"
-    chroma_client = get_chroma_client()
-
-    # Delete existing collection if any
-    try:
-        chroma_client.delete_collection(collection_name)
-    except Exception:
-        pass
-
-    collection = chroma_client.create_collection(collection_name)
-
     texts = [c['text'] for c in chunks]
     embeddings = get_model().encode(texts).tolist()
-    ids = [f"chunk_{i}" for i in range(len(chunks))]
-    metadatas = [{'page': c['page_number'], 'chunk_index': c['chunk_index']} for c in chunks]
+    
+    prepared_data = []
+    for i, chunk in enumerate(chunks):
+        prepared_data.append({
+            'text': chunk['text'],
+            'page': chunk['page_number'],
+            'embedding': embeddings[i]
+        })
+    
+    doc = Document.objects.get(id=doc_id)
+    doc.embeddings_data = prepared_data
+    doc.save()
+    
+    logger.info(f"Stored {len(chunks)} chunks in database for document: {doc_id}")
+    return f"db_{doc_id}"
 
-    collection.add(
-        documents=texts,
-        embeddings=embeddings,
-        ids=ids,
-        metadatas=metadatas
-    )
-
-    logger.info(f"Stored {len(chunks)} chunks in ChromaDB collection: {collection_name}")
-    return collection_name
-
-
-def retrieve_relevant_chunks(collection_name: str, question: str, top_k: int = 4) -> list:
+def retrieve_relevant_chunks(doc_id_str: str, question: str, top_k: int = 4) -> list:
     """
-    Retrieve the most relevant chunks for a question using vector similarity.
+    Retrieve the most relevant chunks for a question using cosine similarity in Python.
     
     Args:
-        collection_name: ChromaDB collection name
+        doc_id_str: Collection name (e.g., 'db_3' or 'doc_3')
         question: User's question text
         top_k: Number of chunks to retrieve
-    
-    Returns:
-        List of dicts with 'text' and 'page' keys
     """
-    chroma_client = get_chroma_client()
-    collection = chroma_client.get_collection(collection_name)
-    question_embedding = get_model().encode([question]).tolist()
+    # Extract ID from string like 'doc_3' or 'db_3'
+    try:
+        doc_id = int(doc_id_str.split('_')[1])
+    except (IndexError, ValueError):
+        logger.error(f"Invalid doc_id format: {doc_id_str}")
+        return []
 
-    results = collection.query(
-        query_embeddings=question_embedding,
-        n_results=top_k
-    )
+    doc = Document.objects.get(id=doc_id)
+    if not doc.embeddings_data:
+        logger.warning(f"No embeddings found for document {doc_id}")
+        return []
+
+    # Encode question
+    question_embedding = get_model().encode([question])[0]
+    
+    # Calculate similarities
+    similarities = []
+    for item in doc.embeddings_data:
+        chunk_embedding = np.array(item['embedding'])
+        # Cosine similarity: (A . B) / (||A|| * ||B||)
+        score = np.dot(question_embedding, chunk_embedding) / (
+            np.linalg.norm(question_embedding) * np.linalg.norm(chunk_embedding)
+        )
+        similarities.append((score, item))
+
+    # Sort and pick top k
+    similarities.sort(key=lambda x: x[0], reverse=True)
+    top_results = similarities[:top_k]
 
     chunks = [
         {
-            'text': doc,
-            'page': results['metadatas'][0][i].get('page', 1)
+            'text': res[1]['text'],
+            'page': res[1]['page']
         }
-        for i, doc in enumerate(results['documents'][0])
+        for res in top_results
     ]
 
-    logger.info(f"Retrieved {len(chunks)} relevant chunks for question")
+    logger.info(f"Retrieved {len(chunks)} relevant chunks from database")
     return chunks
 
-
 def delete_collection(collection_name: str) -> bool:
-    """Delete a ChromaDB collection."""
-    try:
-        chroma_client = get_chroma_client()
-        chroma_client.delete_collection(collection_name)
-        logger.info(f"Deleted ChromaDB collection: {collection_name}")
-        return True
-    except Exception as e:
-        logger.error(f"Failed to delete collection {collection_name}: {str(e)}")
-        return False
+    """No-op for database storage."""
+    return True

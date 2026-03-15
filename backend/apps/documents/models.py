@@ -27,6 +27,7 @@ class Document(models.Model):
         default='uploading'
     )
     chroma_collection_id = models.CharField(max_length=255, blank=True)
+    embeddings_data = models.JSONField(null=True, blank=True)
     page_count = models.IntegerField(default=0)
     word_count = models.IntegerField(default=0)
     error_message = models.TextField(blank=True)

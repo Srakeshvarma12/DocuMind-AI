@@ -137,9 +137,6 @@ CELERY_RESULT_SERIALIZER = 'json'
 DATA_UPLOAD_MAX_MEMORY_SIZE = 26214400   # 25MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 26214400
 
-# ChromaDB Configuration
-CHROMA_DB_PATH = os.environ.get('CHROMA_DB_PATH', str(BASE_DIR / 'chroma_db'))
-
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
