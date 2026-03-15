@@ -11,12 +11,13 @@ logger = logging.getLogger(__name__)
 def process_document(self, document_id: int, extracted_text: str = None, page_count: int = None, word_count: int = None):
     """
     Async task to process an uploaded document.
-    Increased retries and backoff for Gemini Quota (429) errors.
     """
     from apps.documents.models import Document
     from apps.documents.utils.chunker import chunk_text
     from apps.documents.utils.embeddings import store_chunks
     from apps.documents.utils.ai import get_summary
+
+    logger.info(f"--- STARTING DOC PROCESSING: ID={document_id} ---")
 
     doc = Document.objects.get(id=document_id)
     doc.refresh_from_db()
@@ -97,14 +98,18 @@ def process_document(self, document_id: int, extracted_text: str = None, page_co
 
     try:
         # Step 1/3: Chunk and embed
-        if not doc.chroma_collection_id:
+        if not doc.embeddings_data:
             logger.info(f"Step 1/3: Chunking document {document_id}")
             chunks = chunk_text(doc.extracted_text)
             
-            logger.info(f"Step 2/3: Storing {len(chunks)} chunks in ChromaDB")
+            logger.info(f"Step 2/3: Storing {len(chunks)} chunks in PostgreSQL database (JSON field)")
             collection_name = store_chunks(doc.id, chunks)
+            # Keeping chroma_collection_id populated for legacy code but prioritizing database
             doc.chroma_collection_id = collection_name
             doc.save()
+            logger.info(f"Successfully saved embeddings to database for doc {document_id}")
+        else:
+            logger.info(f"Embeddings already exist for document {document_id}, skipping storage step.")
 
         # Step 3/3: Summarize (Non-blocking fallback)
         if not doc.summary or "unavailable" in doc.summary:
@@ -122,7 +127,7 @@ def process_document(self, document_id: int, extracted_text: str = None, page_co
         doc.error_message = ""
         doc.save()
 
-        logger.info(f"Document {document_id} processed successfully")
+        logger.info(f"--- SUCCESS: Document {document_id} processed successfully ---")
 
     except Exception as e:
         error_str = str(e)
@@ -170,7 +175,7 @@ def process_document_sync(document_id: int):
         logger.info(f"Step 1/3: Chunking document {document_id}")
         chunks = chunk_text(doc.extracted_text)
         
-        logger.info(f"Step 2/3: Storing {len(chunks)} chunks in ChromaDB")
+        logger.info(f"Step 2/3: Storing {len(chunks)} chunks in Database")
         collection_name = store_chunks(doc.id, chunks)
         doc.chroma_collection_id = collection_name
         
