@@ -85,7 +85,9 @@ class ChatView(APIView):
             )
 
             # RAG: Retrieve relevant chunks
+            logger.info(f"CHAT: Retrieving chunks for doc {doc.id}, collection={doc.chroma_collection_id}")
             chunks = retrieve_relevant_chunks(doc.chroma_collection_id, question, top_k=4)
+            logger.info(f"CHAT: Found {len(chunks)} relevant chunks")
             source_pages = get_source_pages(chunks)
 
             # Build chat history for context

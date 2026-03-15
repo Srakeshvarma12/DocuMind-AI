@@ -67,8 +67,10 @@ def retrieve_relevant_chunks(doc_id_str: str, question: str, top_k: int = 4) -> 
 
     doc = Document.objects.get(id=doc_id)
     if not doc.embeddings_data:
-        logger.warning(f"No embeddings found for document {doc_id}")
+        logger.warning(f"RETRIEVAL: No embeddings found for document {doc_id}")
         return []
+
+    logger.info(f"RETRIEVAL: Loaded {len(doc.embeddings_data)} chunks from database for doc {doc_id}")
 
     # Encode question
     question_embedding = get_model().encode([question])[0]
@@ -87,6 +89,10 @@ def retrieve_relevant_chunks(doc_id_str: str, question: str, top_k: int = 4) -> 
     similarities.sort(key=lambda x: x[0], reverse=True)
     top_results = similarities[:top_k]
 
+    # Debug: Log top similarity scores
+    scores_debug = [f"{res[0]:.4f}" for res in top_results]
+    logger.info(f"RETRIEVAL: Top {len(top_results)} scores: {scores_debug}")
+
     chunks = [
         {
             'text': res[1]['text'],
@@ -95,7 +101,7 @@ def retrieve_relevant_chunks(doc_id_str: str, question: str, top_k: int = 4) -> 
         for res in top_results
     ]
 
-    logger.info(f"Retrieved {len(chunks)} relevant chunks from database")
+    logger.info(f"RETRIEVAL: Returning {len(chunks)} chunks")
     return chunks
 
 def delete_collection(collection_name: str) -> bool:
