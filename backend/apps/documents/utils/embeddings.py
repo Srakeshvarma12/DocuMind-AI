@@ -26,7 +26,7 @@ def get_model():
 def get_chroma_client():
     """Get persistent ChromaDB client."""
     import chromadb
-    db_path = os.path.join(settings.BASE_DIR, 'chroma_db')
+    db_path = settings.CHROMA_DB_PATH
     logger.debug(f"Connecting to ChromaDB at: {db_path}")
     return chromadb.PersistentClient(path=db_path)
 
