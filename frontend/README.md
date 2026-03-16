@@ -1,4 +1,4 @@
-# DocuMind-AI
+# DocuMind
 
 This is the frontend for DocuMind-AI, an AI-powered document assistant.
 
