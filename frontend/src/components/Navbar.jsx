@@ -41,10 +41,8 @@ export default function Navbar() {
             <div className="max-w-6xl mx-auto px-6 h-[60px] flex items-center justify-between">
                 {/* Logo */}
                 <Link to="/" className="flex items-center gap-2 group">
-                    <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center group-hover:bg-brand-700 transition-colors">
-                        <FileText size={18} className="text-white" />
-                    </div>
-                    <span className="text-lg font-bold tracking-tight text-gray-900">DocuMind</span>
+                    <img src="/logo.png" alt="DocuMind-AI Logo" className="w-8 h-8 rounded-lg object-contain transition-transform group-hover:scale-110" />
+                    <span className="text-lg font-bold tracking-tight text-gray-900">DocuMind-AI</span>
                 </Link>
 
                 {/* Desktop Navigation */}
