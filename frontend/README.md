@@ -1,6 +1,6 @@
 # DocuMind
 
-This is the frontend for DocuMind-AI, an AI-powered document assistant.
+This is the frontend for DocuMind, an AI-powered document assistant.
 
 Currently, two official plugins are available:
 

@@ -165,7 +165,7 @@ const ChatWindow = ({ documentId }) => {
                     </button>
                 </form>
                 <p className="text-[10px] text-center text-gray-400 mt-4 font-medium">
-                    DocuMind AI can make mistakes. Verify important information.
+                    DocuMind can make mistakes. Verify important information.
                 </p>
             </div>
         </div>

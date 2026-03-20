@@ -108,7 +108,7 @@ export default function LandingPage() {
                     <FileText size={20} />
                     <span className="font-bold">DocuMind</span>
                 </div>
-                <p className="text-xs text-gray-400">© 2026 DocuMind AI. All rights reserved.</p>
+                <p className="text-xs text-gray-400">© 2026 DocuMind. All rights reserved.</p>
             </footer>
         </div>
     );
