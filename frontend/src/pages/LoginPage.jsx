@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import toast from 'react-hot-toast';
 
 import client from '../api/client';
+import Logo from '../components/Logo';
 
 export default function LoginPage() {
     const { user, loginWithGoogle, loginMock } = useAuth();
@@ -54,9 +55,7 @@ export default function LoginPage() {
 
                 {/* Branding */}
                 <div className="mb-10 text-center sm:text-left">
-                    <div className="w-12 h-12 bg-brand-600 rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-brand-500/20 mx-auto sm:mx-0">
-                        <FileText size={20} className="text-white" />
-                    </div>
+                    <Logo size="lg" className="mb-6 mx-auto sm:mx-0" />
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back</h1>
                     <p className="text-gray-500 leading-relaxed">
                         Ready to dive back into your documents? Sign in to get started.

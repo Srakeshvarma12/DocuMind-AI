@@ -73,7 +73,7 @@ export default function DashboardPage() {
                             placeholder="Search documents..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="input-premium pl-10 w-full"
+                            className="input-premium !pl-10 w-full"
                         />
                     </div>
                     <button className="btn-secondary flex items-center gap-2 whitespace-nowrap w-full sm:w-auto justify-center">

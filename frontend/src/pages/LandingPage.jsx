@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FileText, Zap, Shield, MessageSquare, ArrowRight, Check } from 'lucide-react';
+import Logo from '../components/Logo';
 
 export default function LandingPage() {
     const { user } = useAuth();
@@ -105,8 +106,8 @@ export default function LandingPage() {
             {/* Footer */}
             <footer className="py-12 border-t border-gray-100 text-center">
                 <div className="flex items-center justify-center gap-2 mb-6 opacity-40">
-                    <FileText size={20} />
-                    <span className="font-bold">DocuMind</span>
+                    <Logo size="sm" />
+                    <span className="font-bold text-gray-900">DocuMind</span>
                 </div>
                 <p className="text-xs text-gray-400">© 2026 DocuMind. All rights reserved.</p>
             </footer>
