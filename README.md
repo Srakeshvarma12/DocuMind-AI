@@ -2,7 +2,7 @@
 
 **DocuMind** is an advanced, enterprise-grade Document Intelligence and Natural Language Retrieval-Augmented Generation (RAG) platform. It enables users to upload, process, and converse with comprehensive documents using state-of-the-art Large Language Models (LLMs) and vector embeddings.
 
-![DocuMind Preview](https://github.com/placeholder.png) <!-- Replace with actual screenshot -->
+<-- ![DocuMind Preview](https://github.com/placeholder.png) --> <!-- Replace with actual screenshot -->
 
 ---
 
